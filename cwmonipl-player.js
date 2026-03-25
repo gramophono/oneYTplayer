@@ -1,10 +1,21 @@
 (function() {
-    console.log("[oneYT] Script v2.5 started.");
+    console.log("[oneYT] Script v2.6 loading...");
 
-    // 1. CSS Injection
+    // 1. Get parameters from the script URL itself
+    const scripts = document.getElementsByTagName('script');
+    const currentScript = scripts[scripts.length - 1];
+    const scriptUrl = new URL(currentScript.src);
+    
+    const PLAYLIST_ID = scriptUrl.searchParams.get('id') || window.oneYT_playlistId || 'PL00rmG2oN8AiQlKD5bOj9sTUF_yp7uaIJ';
+    const CUSTOM_TITLE = scriptUrl.searchParams.get('title') || window.oneYT_playlistTitle || '';
+    const SCRIPT_URL = window.oneYT_scriptUrl || 'https://icy-violet-4cf8.myrovolistisgr.workers.dev';
+
+    console.log("[oneYT] Config:", { PLAYLIST_ID, CUSTOM_TITLE });
+
+    // 2. CSS Injection
     const css = `
     .oneYT-wrapper * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .oneYT-wrapper { background: linear-gradient(135deg, #B71C1C, #D32F2F); min-height: 100vh; display: flex; flex-direction: column; padding: 20px; }
+    .oneYT-wrapper { background: linear-gradient(135deg, #B71C1C, #D32F2F); min-height: 100vh; display: flex; flex-direction: column; padding: 20px; margin-bottom: 20px; }
     .player-container { background: white; border-radius: 15px; box-shadow: 0 20px 60px rgba(183, 28, 28, 0.3); width: 100%; max-width: 1200px; height: 90vh; margin: 0 auto; display: flex; flex-direction: column; overflow: hidden; }
     .player-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: linear-gradient(135deg, #C62828, #E53935); color: white; border-bottom: 2px solid rgba(255, 255, 255, 0.1); }
     .player-header h1 { margin: 0; font-size: 22px; font-weight: bold; }
@@ -28,12 +39,12 @@
     #player { width: 100%; height: 100%; border: none; }
     `;
 
-    // 2. HTML Injection
+    // 3. HTML Injection
     const html = `
     <div class="oneYT-wrapper">
       <div class="player-container">
         <div class="player-header">
-          <h1 id="playlist-title">🎵 YouTube Playlist Player</h1>
+          <h1 id="playlist-title">🎵 ${CUSTOM_TITLE || 'YouTube Playlist Player'}</h1>
         </div>
         <div class="player-body">
           <div class="player-video">
@@ -56,43 +67,33 @@
     </div>
     `;
 
-    // Inject CSS & HTML
+    // Inject CSS
     const styleTag = document.createElement('style');
     styleTag.textContent = css;
     document.head.appendChild(styleTag);
 
-    const container = document.getElementById('oneYTplayer-dynamic-container');
-    if (container) {
-        container.innerHTML = html;
-        console.log("[oneYT] HTML Injected.");
+    // Find or create container
+    let container = document.getElementById('oneYTplayer-dynamic-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'oneYTplayer-dynamic-container';
+        currentScript.parentNode.insertBefore(container, currentScript);
     }
+    container.innerHTML = html;
 
-    // 3. Logic
+    // 4. Logic
     let youtubePlayer;
     let currentPlaylist = [];
     let currentVideoIndex = 0;
 
     function loadPlaylist() {
-      const SCRIPT_URL = window.oneYT_scriptUrl || 'https://icy-violet-4cf8.myrovolistisgr.workers.dev';
-      const PLAYLIST_ID = window.oneYT_playlistId;
-      const CUSTOM_TITLE = window.oneYT_playlistTitle || '';
-
-      if (!PLAYLIST_ID) {
-          console.warn("[oneYT] Playlist ID not found. Retrying...");
-          setTimeout(loadPlaylist, 500);
-          return;
-      }
-
       let baseUrl = SCRIPT_URL.endsWith('/') ? SCRIPT_URL.slice(0, -1) : SCRIPT_URL;
       let url = new URL(baseUrl);
       url.searchParams.set('action', 'getPlaylist');
       url.searchParams.set('playlistId', PLAYLIST_ID);
-      if (CUSTOM_TITLE) {
-        url.searchParams.set('playlistTitle', CUSTOM_TITLE);
-        document.getElementById('playlist-title').textContent = `🎵 ${CUSTOM_TITLE}`;
-      }
+      if (CUSTOM_TITLE) url.searchParams.set('playlistTitle', CUSTOM_TITLE);
 
-      console.log("[oneYT] Sending request to Worker:", url.toString());
+      console.log("[oneYT] Fetching:", url.toString());
 
       fetch(url.toString())
         .then(response => response.json())
@@ -111,7 +112,7 @@
             }
           }
         })
-        .catch(err => console.error("[oneYT] Player Error:", err));
+        .catch(err => console.error("[oneYT] Error:", err));
     }
 
     function renderSongsList() {
@@ -145,22 +146,18 @@
     }
 
     function startPlayer() {
-      console.log("[oneYT] Starting player...");
       youtubePlayer = new YT.Player('player', {
         height: '100%', width: '100%', videoId: '',
         events: { 
-          onReady: () => setTimeout(loadPlaylist, 100),
+          onReady: () => loadPlaylist(),
           onStateChange: (e) => { if (e.data === YT.PlayerState.ENDED) playNextVideo(); }
         }
       });
     }
 
-    // Check if API is already loaded
     if (window.YT && window.YT.Player) {
-        console.log("[oneYT] API already loaded.");
         startPlayer();
     } else {
-        console.log("[oneYT] Loading YouTube API...");
         window.onYouTubeIframeAPIReady = startPlayer;
         const tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
