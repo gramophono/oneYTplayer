@@ -1,5 +1,5 @@
 (function() {
-    console.log("[oneYT] Script v2.8 loading (Full Page Mode)...");
+    console.log("[oneYT] Script v2.9 loading (Aggressive Full Page Mode)...");
 
     // 1. Get parameters from the script URL itself
     const scripts = document.getElementsByTagName('script');
@@ -13,31 +13,49 @@
 
     console.log("[oneYT] Config:", { PLAYLIST_ID, CUSTOM_TITLE, FULL_PAGE });
 
-    // 2. Full Page Mode Logic
+    // 2. Aggressive Full Page Mode Logic
     if (FULL_PAGE) {
-        const fullPageCss = `
-        /* Hide Blogger elements */
-        header, footer, .sidebar-wrapper, .header-outer, .footer-outer, .sidebar-container, 
-        .post-title, .post-header, .post-footer, .comments, .blog-pager, .feed-links,
-        .post-share-buttons, .post-location, .post-author, .post-timestamp, .post-labels {
-            display: none !important;
+        // Create a dedicated container for the player if it doesn't exist
+        let playerContainer = document.getElementById('oneYTplayer-dynamic-container');
+        if (!playerContainer) {
+            playerContainer = document.createElement('div');
+            playerContainer.id = 'oneYTplayer-dynamic-container';
+            document.body.appendChild(playerContainer);
         }
-        /* Reset layout */
-        body, html { margin: 0 !important; padding: 0 !important; overflow: hidden !important; height: 100% !important; width: 100% !important; }
-        .main-inner, .content-inner, .post-body, .post, .blog-posts, .main, .content { 
-            margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; 
-        }
-        #oneYTplayer-dynamic-container { 
-            position: fixed !important; top: 0 !important; left: 0 !important; 
-            width: 100vw !important; height: 100vh !important; z-index: 999999 !important; 
-        }
+
+        // Move the container to be a direct child of body to avoid parent hiding
+        document.body.appendChild(playerContainer);
+
+        const fullPageStyle = document.createElement('style');
+        fullPageStyle.textContent = `
+            /* Hide ALL direct children of body except our container and scripts */
+            body > *:not(#oneYTplayer-dynamic-container):not(script):not(style) {
+                display: none !important;
+            }
+            /* Reset body and html */
+            body, html { 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                overflow: hidden !important; 
+                height: 100% !important; 
+                width: 100% !important; 
+                background: #000 !important;
+            }
+            #oneYTplayer-dynamic-container { 
+                position: fixed !important; 
+                top: 0 !important; 
+                left: 0 !important; 
+                width: 100vw !important; 
+                height: 100vh !important; 
+                z-index: 2147483647 !important; 
+                display: block !important;
+                visibility: visible !important;
+            }
         `;
-        const styleTag = document.createElement('style');
-        styleTag.textContent = fullPageCss;
-        document.head.appendChild(styleTag);
+        document.head.appendChild(fullPageStyle);
     }
 
-    // 3. CSS Injection - Improved for Blogger
+    // 3. CSS Injection - Player Styles
     const css = `
     .oneYT-wrapper * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     .oneYT-wrapper { background: linear-gradient(135deg, #B71C1C, #D32F2F); width: 100%; height: 100%; display: flex; flex-direction: column; padding: ${FULL_PAGE ? '0' : '15px'}; border-radius: ${FULL_PAGE ? '0' : '10px'}; overflow: hidden; }
@@ -96,14 +114,9 @@
     styleTag.textContent = css;
     document.head.appendChild(styleTag);
 
-    // Find or create container
-    let container = document.getElementById('oneYTplayer-dynamic-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'oneYTplayer-dynamic-container';
-        currentScript.parentNode.insertBefore(container, currentScript);
-    }
-    container.innerHTML = html;
+    // Ensure container has the HTML
+    const container = document.getElementById('oneYTplayer-dynamic-container');
+    if (container) container.innerHTML = html;
 
     // 5. Logic
     let youtubePlayer;
@@ -116,8 +129,6 @@
       url.searchParams.set('action', 'getPlaylist');
       url.searchParams.set('playlistId', PLAYLIST_ID);
       if (CUSTOM_TITLE) url.searchParams.set('playlistTitle', CUSTOM_TITLE);
-
-      console.log("[oneYT] Fetching:", url.toString());
 
       fetch(url.toString())
         .then(response => response.json())
