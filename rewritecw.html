@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Player με Περμαλίνκ</title>
+<style>
+  body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+  #loading { 
+    text-align: center; 
+    padding: 2rem; 
+    color: #666; 
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    z-index: 1000;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  #error { 
+    background: #ffe6e6; 
+    padding: 2rem; 
+    margin: 2rem;
+    border-radius: 10px; 
+    border: 1px solid #ffcccc;
+    display: none;
+    text-align: center;
+  }
+  .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <h3>⏳ Φόρτωση Player...</h3>
+  <p>Παρακαλώ περιμένετε</p>
+</div>
+
+<div id="error">
+  <h3>❌ Σφάλμα Φόρτωσης</h3>
+  <p id="errorMessage"></p>
+  <button onclick="window.location.reload()" style="
+    padding: 10px 20px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 1rem;
+  ">
+    🔄 Δοκιμή ξανά
+  </button>
+</div>
+
+<script>
+(async () => {
+  // Το περμαλίνκ από το GitHub (ΝΕΟ PLAYER)
+  const permalink = "https://github.com/gramophono/oneYTplayer/blob/main/cwmonipl.html";
+  
+  // Μετατροπή σε raw URL
+  const rawUrl = permalink
+    .replace('github.com', 'raw.githubusercontent.com')
+    .replace('/blob/', '/');
+
+  console.log(`🚀 Αποστολή αιτήματος στο: ${rawUrl}`);
+
+  try {
+    const response = await fetch(rawUrl);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP σφάλμα: ${response.status} ${response.statusText}`);
+    }
+
+    const htmlContent = await response.text();
+    console.log("✅ Το HTML φορτώθηκε επιτυχώς");
+
+    // Ανάλυση του HTML για να εξάγουμε το περιεχόμενο του body
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    
+    // Εξαγωγή του περιεχομένου του <body>
+    const bodyContent = doc.body.innerHTML;
+    
+    // Εξαγωγή των styles από το <head>
+    const styles = Array.from(doc.head.querySelectorAll('style, link[rel="stylesheet"]'))
+      .map(el => el.outerHTML)
+      .join('\n');
+    
+    // Εξαγωγή του τίτλου
+    const pageTitle = doc.title || "YouTube Playlist Player";
+
+    // Δημιουργία του τελικού HTML
+    const finalHTML = `
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${pageTitle}</title>
+${styles}
+</head>
+<body>
+${bodyContent}
+</body>
+</html>`;
+
+    console.log("🎯 Αντικατάσταση ολόκληρης της σελίδας...");
+
+    // Αντικατάσταση ολόκληρης της σελίδας
+    document.open();
+    document.write(finalHTML);
+    document.close();
+    
+    console.log("🎉 Η σελίδα φορτώθηκε επιτυχώς!");
+
+  } catch (err) {
+    console.error("❌ Σφάλμα:", err);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('errorMessage').textContent = 
+      `Δεν ήταν δυνατή η φόρτωση της σελίδας: ${err.message}`;
+    
+    // Εμφάνιση λινκ για άμεση πρόσβαση
+    const errorDiv = document.getElementById('error');
+    const directLink = document.createElement('p');
+    directLink.innerHTML = `<br>Μπορείς να προσπαθήσεις: <a href="${permalink}" target="_blank">📄 Άνοιγμα στο GitHub</a> ή <a href="${rawUrl}" target="_blank">⬇️ Κατέβασμα αρχείου</a>`;
+    errorDiv.appendChild(directLink);
+  }
+})();
+</script>
+
+</body>
+</html>
