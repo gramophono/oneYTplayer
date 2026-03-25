@@ -321,7 +321,7 @@
     let isLastVideoEnded = false;
     
     // ΔΥΝΑΜΙΚΕΣ ΡΥΘΜΙΣΕΙΣ
-    const SCRIPT_URL = window.oneYT_scriptUrl || 'https://hidden-hat-e6f9.gramophono-gr.workers.dev';
+    const SCRIPT_URL = window.oneYT_scriptUrl || 'https://icy-violet-4cf8.myrovolistisgr.workers.dev';
     const PLAYLIST_ID = window.oneYT_playlistId || 'PL00rmG2oN8AiQlKD5bOj9sTUF_yp7uaIJ';
     const CUSTOM_TITLE = window.oneYT_playlistTitle || '';
 
@@ -420,9 +420,12 @@
     }
     
     function loadPlaylist() {
-      const url = `${SCRIPT_URL}?action=getPlaylist&playlistId=${PLAYLIST_ID}`;
+      // Προσθήκη του τίτλου στο URL του αιτήματος προς τον Worker
+      let url = `${SCRIPT_URL}?action=getPlaylist&playlistId=${PLAYLIST_ID}`;
+      if (CUSTOM_TITLE) {
+        url += `&playlistTitle=${encodeURIComponent(CUSTOM_TITLE)}`;
+      }
       
-      // Μόνο αν δεν έχουμε ήδη τίτλο από το Blogger, δείξε το "Φόρτωση..."
       if (!CUSTOM_TITLE) {
           document.getElementById('playlist-title').textContent = '🎵 Φόρτωση λίστας...';
       }
@@ -432,8 +435,8 @@
         .then(response => response.json())
         .then(data => {
           if (data && data.songs && data.songs.length > 0) {
-            // Αν δεν υπάρχει CUSTOM_TITLE, χρησιμοποίησε αυτόν από το YouTube
-            if (!CUSTOM_TITLE && data.playlistTitle) {
+            // Προτεραιότητα στον τίτλο που επιστρέφει ο Worker (που πλέον λαμβάνει υπόψη τον δικό μας)
+            if (data.playlistTitle) {
               document.getElementById('playlist-title').textContent = `🎵 ${data.playlistTitle}`;
             }
             
