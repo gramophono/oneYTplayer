@@ -1,4 +1,6 @@
 (function() {
+    console.log("[oneYT] Script v2.5 started.");
+
     // 1. CSS Injection
     const css = `
     .oneYT-wrapper * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -60,7 +62,10 @@
     document.head.appendChild(styleTag);
 
     const container = document.getElementById('oneYTplayer-dynamic-container');
-    if (container) container.innerHTML = html;
+    if (container) {
+        container.innerHTML = html;
+        console.log("[oneYT] HTML Injected.");
+    }
 
     // 3. Logic
     let youtubePlayer;
@@ -68,29 +73,23 @@
     let currentVideoIndex = 0;
 
     function loadPlaylist() {
-      // Διάβασε τις ρυθμίσεις τη στιγμή που τις χρειάζεσαι
       const SCRIPT_URL = window.oneYT_scriptUrl || 'https://icy-violet-4cf8.myrovolistisgr.workers.dev';
       const PLAYLIST_ID = window.oneYT_playlistId;
       const CUSTOM_TITLE = window.oneYT_playlistTitle || '';
 
-      // ΑΥΣΤΗΡΟΣ ΕΛΕΓΧΟΣ: Αν δεν υπάρχει ID, περίμενε λίγο ακόμα
       if (!PLAYLIST_ID) {
-          console.warn("[oneYT] Playlist ID not found yet. Retrying in 500ms...");
+          console.warn("[oneYT] Playlist ID not found. Retrying...");
           setTimeout(loadPlaylist, 500);
           return;
       }
 
-      // Καθαρισμός SCRIPT_URL και δημιουργία URL με παραμέτρους
       let baseUrl = SCRIPT_URL.endsWith('/') ? SCRIPT_URL.slice(0, -1) : SCRIPT_URL;
       let url = new URL(baseUrl);
       url.searchParams.set('action', 'getPlaylist');
       url.searchParams.set('playlistId', PLAYLIST_ID);
-      
       if (CUSTOM_TITLE) {
         url.searchParams.set('playlistTitle', CUSTOM_TITLE);
         document.getElementById('playlist-title').textContent = `🎵 ${CUSTOM_TITLE}`;
-      } else {
-        document.getElementById('playlist-title').textContent = '🎵 Φόρτωση λίστας...';
       }
 
       console.log("[oneYT] Sending request to Worker:", url.toString());
@@ -145,7 +144,8 @@
       }
     }
 
-    window.onYouTubeIframeAPIReady = function() {
+    function startPlayer() {
+      console.log("[oneYT] Starting player...");
       youtubePlayer = new YT.Player('player', {
         height: '100%', width: '100%', videoId: '',
         events: { 
@@ -153,19 +153,25 @@
           onStateChange: (e) => { if (e.data === YT.PlayerState.ENDED) playNextVideo(); }
         }
       });
-    };
+    }
+
+    // Check if API is already loaded
+    if (window.YT && window.YT.Player) {
+        console.log("[oneYT] API already loaded.");
+        startPlayer();
+    } else {
+        console.log("[oneYT] Loading YouTube API...");
+        window.onYouTubeIframeAPIReady = startPlayer;
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+    }
 
     function playNextVideo() {
       let next = (currentVideoIndex + 1) % currentPlaylist.length;
       playVideo(currentPlaylist[next].videoId, next);
     }
 
-    // Load YouTube API
-    const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
-    document.head.appendChild(tag);
-
-    // Event Listeners
     document.getElementById('btn-prev').onclick = () => {
       let prev = (currentVideoIndex - 1 + currentPlaylist.length) % currentPlaylist.length;
       playVideo(currentPlaylist[prev].videoId, prev);
