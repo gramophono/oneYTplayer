@@ -66,28 +66,36 @@
     let youtubePlayer;
     let currentPlaylist = [];
     let currentVideoIndex = 0;
-    let isLastVideoEnded = false;
 
     function loadPlaylist() {
       // Διάβασε τις ρυθμίσεις τη στιγμή που τις χρειάζεσαι
       const SCRIPT_URL = window.oneYT_scriptUrl || 'https://icy-violet-4cf8.myrovolistisgr.workers.dev';
-      const PLAYLIST_ID = window.oneYT_playlistId || 'PL00rmG2oN8AiQlKD5bOj9sTUF_yp7uaIJ';
+      const PLAYLIST_ID = window.oneYT_playlistId;
       const CUSTOM_TITLE = window.oneYT_playlistTitle || '';
 
-      // Καθαρισμός SCRIPT_URL
+      // ΑΥΣΤΗΡΟΣ ΕΛΕΓΧΟΣ: Αν δεν υπάρχει ID, περίμενε λίγο ακόμα
+      if (!PLAYLIST_ID) {
+          console.warn("[oneYT] Playlist ID not found yet. Retrying in 500ms...");
+          setTimeout(loadPlaylist, 500);
+          return;
+      }
+
+      // Καθαρισμός SCRIPT_URL και δημιουργία URL με παραμέτρους
       let baseUrl = SCRIPT_URL.endsWith('/') ? SCRIPT_URL.slice(0, -1) : SCRIPT_URL;
-      let url = `${baseUrl}?action=getPlaylist&playlistId=${PLAYLIST_ID}`;
+      let url = new URL(baseUrl);
+      url.searchParams.set('action', 'getPlaylist');
+      url.searchParams.set('playlistId', PLAYLIST_ID);
       
       if (CUSTOM_TITLE) {
-        url += `&playlistTitle=${encodeURIComponent(CUSTOM_TITLE)}`;
+        url.searchParams.set('playlistTitle', CUSTOM_TITLE);
         document.getElementById('playlist-title').textContent = `🎵 ${CUSTOM_TITLE}`;
       } else {
         document.getElementById('playlist-title').textContent = '🎵 Φόρτωση λίστας...';
       }
 
-      console.log("Fetching from Worker:", url);
+      console.log("[oneYT] Sending request to Worker:", url.toString());
 
-      fetch(url)
+      fetch(url.toString())
         .then(response => response.json())
         .then(data => {
           if (data && data.songs && data.songs.length > 0) {
@@ -104,7 +112,7 @@
             }
           }
         })
-        .catch(err => console.error("Player Error:", err));
+        .catch(err => console.error("[oneYT] Player Error:", err));
     }
 
     function renderSongsList() {
@@ -141,7 +149,7 @@
       youtubePlayer = new YT.Player('player', {
         height: '100%', width: '100%', videoId: '',
         events: { 
-          onReady: () => setTimeout(loadPlaylist, 100), // Μικρή καθυστέρηση για σιγουριά
+          onReady: () => setTimeout(loadPlaylist, 100),
           onStateChange: (e) => { if (e.data === YT.PlayerState.ENDED) playNextVideo(); }
         }
       });
