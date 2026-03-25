@@ -318,8 +318,9 @@
     let currentVideoIndex = 0;
     let isLastVideoEnded = false;
     
-    const SCRIPT_URL = 'https://hidden-hat-e6f9.gramophono-gr.workers.dev';
-    const PLAYLIST_ID = 'PL00rmG2oN8AiQlKD5bOj9sTUF_yp7uaIJ';
+    // ΔΥΝΑΜΙΚΕΣ ΡΥΘΜΙΣΕΙΣ
+    const SCRIPT_URL = window.oneYT_scriptUrl || 'https://hidden-hat-e6f9.gramophono-gr.workers.dev';
+    const PLAYLIST_ID = window.oneYT_playlistId || 'PL00rmG2oN8AiQlKD5bOj9sTUF_yp7uaIJ';
 
     function loadYouTubeAPI() {
       if (window.YT && window.YT.Player) {
