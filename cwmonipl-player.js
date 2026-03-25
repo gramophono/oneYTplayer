@@ -298,18 +298,21 @@
     document.head.appendChild(styleTag);
 
     // Inject HTML
-    // Find the script tag that is currently executing
-    const scripts = document.getElementsByTagName('script');
-    const currentScript = scripts[scripts.length - 1];
-    const container = document.createElement('div');
-    container.id = 'oneYTplayer-dynamic-container';
-    container.innerHTML = html;
-    
-    // Insert before the script or at the end of body if script not found
-    if (currentScript && currentScript.parentNode) {
-        currentScript.parentNode.insertBefore(container, currentScript);
+    const container = document.getElementById('oneYTplayer-dynamic-container');
+    if (container) {
+        container.innerHTML = html;
     } else {
-        document.body.appendChild(container);
+        // Fallback αν δεν βρεθεί το container
+        const scripts = document.getElementsByTagName('script');
+        const currentScript = scripts[scripts.length - 1];
+        const newContainer = document.createElement('div');
+        newContainer.id = 'oneYTplayer-dynamic-container';
+        newContainer.innerHTML = html;
+        if (currentScript && currentScript.parentNode) {
+            currentScript.parentNode.insertBefore(newContainer, currentScript);
+        } else {
+            document.body.appendChild(newContainer);
+        }
     }
 
     // 3. Original JS Logic (wrapped to avoid global scope pollution)
@@ -318,10 +321,9 @@
     let currentVideoIndex = 0;
     let isLastVideoEnded = false;
     
-    // ΔΥΝΑΜΙΚΕΣ ΡΥΘΜΙΣΕΙΣ ΜΕ DATA ATTRIBUTES
-    const scriptTag = document.getElementById('oneYT-script') || currentScript;
-    const SCRIPT_URL = (scriptTag && scriptTag.getAttribute('data-worker')) || window.oneYT_scriptUrl || 'https://hidden-hat-e6f9.gramophono-gr.workers.dev';
-    const PLAYLIST_ID = (scriptTag && scriptTag.getAttribute('data-playlist')) || window.oneYT_playlistId || 'PL00rmG2oN8AiQlKD5bOj9sTUF_yp7uaIJ';
+    // ΔΥΝΑΜΙΚΕΣ ΡΥΘΜΙΣΕΙΣ
+    const SCRIPT_URL = window.oneYT_scriptUrl || 'https://hidden-hat-e6f9.gramophono-gr.workers.dev';
+    const PLAYLIST_ID = window.oneYT_playlistId || 'PL00rmG2oN8AiQlKD5bOj9sTUF_yp7uaIJ';
 
     function loadYouTubeAPI() {
       if (window.YT && window.YT.Player) {
