@@ -302,7 +302,6 @@
     if (container) {
         container.innerHTML = html;
     } else {
-        // Fallback αν δεν βρεθεί το container
         const scripts = document.getElementsByTagName('script');
         const currentScript = scripts[scripts.length - 1];
         const newContainer = document.createElement('div');
@@ -324,6 +323,13 @@
     // ΔΥΝΑΜΙΚΕΣ ΡΥΘΜΙΣΕΙΣ
     const SCRIPT_URL = window.oneYT_scriptUrl || 'https://hidden-hat-e6f9.gramophono-gr.workers.dev';
     const PLAYLIST_ID = window.oneYT_playlistId || 'PL00rmG2oN8AiQlKD5bOj9sTUF_yp7uaIJ';
+    const CUSTOM_TITLE = window.oneYT_playlistTitle || '';
+
+    // Αν υπάρχει τίτλος από το Blogger, εμφάνισέ τον αμέσως
+    if (CUSTOM_TITLE) {
+        const titleEl = document.getElementById('playlist-title');
+        if (titleEl) titleEl.textContent = `🎵 ${CUSTOM_TITLE}`;
+    }
 
     function loadYouTubeAPI() {
       if (window.YT && window.YT.Player) {
@@ -416,14 +422,18 @@
     function loadPlaylist() {
       const url = `${SCRIPT_URL}?action=getPlaylist&playlistId=${PLAYLIST_ID}`;
       
-      document.getElementById('playlist-title').textContent = '🎵 Φόρτωση λίστας...';
+      // Μόνο αν δεν έχουμε ήδη τίτλο από το Blogger, δείξε το "Φόρτωση..."
+      if (!CUSTOM_TITLE) {
+          document.getElementById('playlist-title').textContent = '🎵 Φόρτωση λίστας...';
+      }
       document.getElementById('songs-list').innerHTML = '<li class="player-song">Φόρτωση τραγουδιών...</li>';
       
       fetch(url)
         .then(response => response.json())
         .then(data => {
           if (data && data.songs && data.songs.length > 0) {
-            if (data.playlistTitle) {
+            // Αν δεν υπάρχει CUSTOM_TITLE, χρησιμοποίησε αυτόν από το YouTube
+            if (!CUSTOM_TITLE && data.playlistTitle) {
               document.getElementById('playlist-title').textContent = `🎵 ${data.playlistTitle}`;
             }
             
@@ -453,7 +463,7 @@
         })
         .catch(error => {
           document.getElementById('songs-list').innerHTML = '<li class="player-song">Σφάλμα σύνδεσης</li>';
-          document.getElementById('playlist-title').textContent = '🎵 Σφάλμα φόρτωσης';
+          if (!CUSTOM_TITLE) document.getElementById('playlist-title').textContent = '🎵 Σφάλμα φόρτωσης';
         });
     }
     
