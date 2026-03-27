@@ -1,7 +1,6 @@
 (function() {
-    // 1. CSS Injection
+    // 1. CSS Injection - ΒΕΛΤΙΣΤΟΠΟΙΗΜΕΝΟ ΥΨΟΣ
     const css = `
-    /* Κράτησε το ίδιο CSS που είχες - δεν το αλλάζω */
     .oneYT-wrapper * {
       box-sizing: border-box;
       margin: 0;
@@ -11,19 +10,19 @@
     
     .oneYT-wrapper {
       background: linear-gradient(135deg, #B71C1C, #D32F2F);
-      min-height: 100vh;
+      min-height: auto;  /* ΑΛΛΑΓΗ: από 100vh σε auto */
       display: flex;
       flex-direction: column;
-      padding: 20px;
+      padding: 30px 20px;  /* ΑΥΞΗΜΕΝΟ: περισσότερος χώρος γύρω */
     }
     
     .player-container {
       background: white;
-      border-radius: 15px;
+      border-radius: 20px;  /* ΕΝΙΣΧΥΜΕΝΟ: μεγαλύτερη στρογγυλοποίηση */
       box-shadow: 0 20px 60px rgba(183, 28, 28, 0.3);
       width: 100%;
-      max-width: 1200px;
-      height: 90vh;
+      max-width: 1300px;  /* ΕΝΙΣΧΥΜΕΝΟ: λίγο πιο φαρδύ */
+      height: 75vh;  /* ΒΑΣΙΚΗ ΑΛΛΑΓΗ: από 90vh σε 75vh */
       margin: 0 auto;
       display: flex;
       flex-direction: column;
@@ -34,15 +33,16 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 20px;
+      padding: 12px 20px;  /* ΜΙΚΡΟΤΕΡΟ: λιγότερο padding */
       background: linear-gradient(135deg, #C62828, #E53935);
       color: white;
       border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
     }
     
     .player-header h1 {
       margin: 0;
-      font-size: 22px;
+      font-size: 20px;  /* ΜΙΚΡΟΤΕΡΟ: πιο διακριτικός τίτλος */
       font-weight: bold;
     }
     
@@ -75,10 +75,10 @@
     .player-controls {
       background: linear-gradient(to right, #8B0000, #B22222);
       color: white;
-      padding: 10px 15px;
+      padding: 8px 15px;  /* ΜΙΚΡΟΤΕΡΟ: πιο συμπαγή κουμπιά */
       display: flex;
       justify-content: center;
-      gap: 15px;
+      gap: 12px;
       border-top: 2px solid #DC143C;
       flex-shrink: 0;
     }
@@ -87,16 +87,16 @@
       background: #C62828;
       color: white;
       border: none;
-      padding: 10px 18px;
+      padding: 8px 16px;  /* ΜΙΚΡΟΤΕΡΟ: πιο συμπαγή κουμπιά */
       font-size: 14px;
-      border-radius: 6px;
+      border-radius: 8px;  /* ΕΝΙΣΧΥΜΕΝΟ: πιο στρογγυλά */
       cursor: pointer;
       font-weight: bold;
       transition: all 0.3s;
       display: flex;
       align-items: center;
       gap: 8px;
-      min-width: 120px;
+      min-width: 110px;
       justify-content: center;
     }
     
@@ -107,7 +107,7 @@
     
     .player-playlist {
       flex: 1;
-      padding: 15px;
+      padding: 12px;  /* ΜΙΚΡΟΤΕΡΟ: λιγότερο padding */
       overflow-y: auto;
       overflow-x: hidden;
       background: #FFF5F5;
@@ -118,10 +118,10 @@
     }
     
     .player-playlist h2 {
-      margin: 0 0 12px 0;
+      margin: 0 0 10px 0;
       color: #B71C1C;
-      font-size: 16px;
-      padding-bottom: 8px;
+      font-size: 15px;
+      padding-bottom: 6px;
       border-bottom: 2px solid #FFCDD2;
       flex-shrink: 0;
     }
@@ -140,19 +140,19 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 8px;
-      margin-bottom: 5px;
+      padding: 6px;  /* ΜΙΚΡΟΤΕΡΟ: πιο συμπαγή τραγούδια */
+      margin-bottom: 4px;
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.3s;
       border-bottom: 1px solid #FFEBEE;
-      font-size: 13px;
+      font-size: 12px;
       color: #8B0000;
     }
     
     .player-song-thumb {
-      width: 55px;
-      height: 40px;
+      width: 50px;  /* ΜΙΚΡΟΤΕΡΟ: μικρότερες μικρογραφίες */
+      height: 35px;
       object-fit: cover;
       border-radius: 4px;
       flex-shrink: 0;
@@ -173,26 +173,29 @@
       background: #FFEBEE;
       border-left: 4px solid #C62828;
       font-weight: bold;
-      padding-top: 9px;
-      padding-bottom: 9px;
+      padding-top: 7px;
+      padding-bottom: 7px;
     }
     
     .player-status {
       background: #FFF5F5;
       padding: 6px 15px;
-      font-size: 12px;
+      font-size: 11px;  /* ΜΙΚΡΟΤΕΡΟ: πιο διακριτικό */
       color: #B71C1C;
       border-top: 1px solid #FFCDD2;
       display: flex;
       justify-content: space-between;
+      flex-shrink: 0;
     }
     
+    /* ΒΕΛΤΙΣΤΟΠΟΙΗΜΕΝΟ RESPONSIVE */
     @media (max-width: 768px) {
       .oneYT-wrapper {
-        padding: 10px;
+        padding: 20px 15px;
       }
       .player-container {
-        height: 95vh;
+        height: 70vh;  /* ΜΙΚΡΟΤΕΡΟ: από 95vh σε 70vh */
+        border-radius: 15px;
       }
       .player-body {
         flex-direction: column;
@@ -209,42 +212,46 @@
         border-left: none;
         border-top: 2px solid #FFCDD2;
         max-height: none;
-        min-height: 200px;
-      }
-      .player-controls button {
-        padding: 8px 12px;
-        font-size: 13px;
-        min-width: 110px;
-      }
-      .player-header h1 {
-        font-size: 18px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .player-container {
-        height: 100vh;
-        border-radius: 10px;
-      }
-      .oneYT-wrapper {
-        padding: 5px;
-      }
-      .player-video {
-        min-height: 220px;
-      }
-      .player-screen {
-        min-height: 220px;
-      }
-      .player-playlist {
         min-height: 180px;
       }
       .player-controls button {
-        padding: 7px 10px;
+        padding: 6px 12px;
         font-size: 12px;
         min-width: 100px;
       }
       .player-header h1 {
         font-size: 16px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .oneYT-wrapper {
+        padding: 15px 10px;
+      }
+      .player-container {
+        height: 65vh;  /* ΜΙΚΡΟΤΕΡΟ: από 100vh σε 65vh */
+        border-radius: 12px;
+      }
+      .player-video {
+        min-height: 200px;
+      }
+      .player-screen {
+        min-height: 200px;
+      }
+      .player-playlist {
+        min-height: 150px;
+      }
+      .player-controls button {
+        padding: 6px 10px;
+        font-size: 11px;
+        min-width: 90px;
+      }
+      .player-header h1 {
+        font-size: 14px;
+      }
+      .player-song-thumb {
+        width: 45px;
+        height: 32px;
       }
     }
     
@@ -255,7 +262,7 @@
     }
     `;
 
-    // 2. HTML Injection
+    // 2. HTML Injection (παραμένει ίδιο)
     const html = `
     <div class="oneYT-wrapper">
       <div class="player-container">
@@ -302,7 +309,6 @@
     if (container) {
         container.innerHTML = html;
     } else {
-        // Fallback αν δεν βρεθεί το container
         const scripts = document.getElementsByTagName('script');
         const currentScript = scripts[scripts.length - 1];
         const newContainer = document.createElement('div');
@@ -315,17 +321,15 @@
         }
     }
 
-    // 3. Original JS Logic (wrapped to avoid global scope pollution)
+    // 3. Original JS Logic (παραμένει ίδιο)
     let youtubePlayer;
     let currentPlaylist = [];
     let currentVideoIndex = 0;
     let isLastVideoEnded = false;
     
-    // ΔΥΝΑΜΙΚΕΣ ΡΥΘΜΙΣΕΙΣ
     const SCRIPT_URL = window.oneYT_scriptUrl || 'https://icy-violet-4cf8.myrovolistisgr.workers.dev';
     const PLAYLIST_ID = window.oneYT_playlistId || 'PL00rmG2oN8AiQlKD5bOj9sTUF_yp7uaIJ';
-//https://icy-violet-4cf8.myrovolistisgr.workers.dev
-//https://hidden-hat-e6f9.gramophono-gr.workers.dev
+
     function loadYouTubeAPI() {
       if (window.YT && window.YT.Player) {
         createYouTubePlayer();
@@ -519,11 +523,9 @@
       }
     }
 
-    // Event Listeners for buttons
     document.getElementById('btn-prev').addEventListener('click', playPrevVideo);
     document.getElementById('btn-next').addEventListener('click', playNextVideo);
 
-    // Keyboard shortcuts
     document.addEventListener('keydown', function(event) {
       if (event.key === 'ArrowRight' || event.key === ' ') {
         playNextVideo();
@@ -534,7 +536,6 @@
       }
     });
 
-    // Warmup logic
     function warmupYouTube() {
       if (window.ytWarm) return;
       window.ytWarm = true;
@@ -554,7 +555,5 @@
     document.addEventListener('mousemove', warmupYouTube, { once: true });
     document.addEventListener('touchstart', warmupYouTube, { once: true });
 
-    // Start everything
     loadYouTubeAPI();
-
 })();
